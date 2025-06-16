@@ -1,0 +1,66 @@
+=========================================
+=== BASH. Функции.
+=========================================
+
+VAR1="Var1"
+VAR2="Var2"
+VAR3="Var3"
+
+function_1()
+{
+ echo "Result f1"
+}
+
+function_2()
+{
+ echo "Arguments count: " "$#"
+}
+
+function_3()
+{
+ if [ "$#" -eq 0 ]
+ then 
+    echo "None arguments"
+ else
+    echo "Arguments count: " "$#"
+ fi
+}
+
+return_global_vars()
+{
+ for element in "$@"
+ do
+    echo $element
+ done
+}
+
+function return_result()
+{
+    local sum=$(( 10 + 20 ))
+    return $sum
+}
+
+function return_multiple()
+{
+    local array=("Hello," "multiple" "World!")
+    echo ${array[@]}
+}
+
+function return_string() {
+    local str="Hello, string World!"
+    echo $str
+}
+
+function_1
+function_2 'Hello' "world!" 1234567890
+function_3
+return_global_vars $VAR1 $VAR2 $VAR3
+
+return_result
+ echo "Summa:" $?
+
+RESULT=(`return_multiple`)
+echo ${RESULT[0]} ${RESULT[1]} ${RESULT[2]}
+
+result=`return_string`
+echo $result

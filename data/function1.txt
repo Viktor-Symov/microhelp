@@ -1,0 +1,103 @@
+=========================================
+=== BASH. Functions.
+=========================================
+
+--- Bash Function Declaration
+
+1. Basic syntax
+function_name(){
+    # Body
+}
+
+2. Alternative syntax
+function alt_function_name {
+    # Body
+}
+
+
+--- Bash Function Parameters
+
+Using parameters to functions:
+ - $1, $2, $3, etc.: Individual parameter values
+ - $@: All parameters as separate quoted strings
+ - $*: All parameters as a single quoted string
+ - $#: The number of parameters passed to the function
+
+3. To call a function by any arguments:
+function_name arg1 arg2
+
+4. How to use arguments:
+greet() {
+    echo "Hello, $1! Welcome to $2."
+}
+greet "Alice" "Bash scripting"
+
+
+5. Unknown number of parameters, you can use $@ to iterate through all arguments:
+list_items() {
+    echo "You provided $# items:"
+    for item in "$@"; do
+        echo "- $item"
+    done
+}
+list_items apple banana cherry
+
+Default Parameter Values
+greet_with_default() {
+    local name=${1:-"Guest"}
+    echo "Hello, $name!"
+}
+greet_with_default           # Output: Hello, Guest!
+greet_with_default "Alice"   # Output: Hello, Alice!
+
+
+
+
+
+
+5. Local Variables, use the local keyword:
+my_function() {
+    local my_var="Local value"
+    echo $my_var
+}
+my_function  # Output: Local value
+echo $my_var  # Output: (empty, as my_var is not in global scope)
+
+
+6. Return Values
+Unlike functions in many programming languages, Bash functions don't use a return statement to return values. Instead, they can:
+ - Echo output, which can be captured using command substitution
+ - Set global variables
+ - Use the return keyword to specify an exit status
+
+return_global_vars(){
+ for element in "$@"
+ do
+    echo $element
+ done
+}
+return_global_vars $VAR1 $VAR2 $VAR3
+
+
+function return_result(){
+    local sum=$(( 10 + 20 ))
+    return $sum
+}
+return_result
+ echo "Summa:" $?
+
+
+function return_multiple(){
+    local array=("Hello," "multiple" "World!")
+    echo ${array[@]}
+}
+RESULT=(`return_multiple`)
+echo ${RESULT[0]} ${RESULT[1]} ${RESULT[2]}
+
+
+function return_string() {
+    local str="Hello, string World!"
+    echo $str
+}
+result=`return_string`
+echo $result

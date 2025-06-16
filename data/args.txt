@@ -1,0 +1,14 @@
+=========================================
+=== Свободное место на разделах и занимаемое каталогами пространство.
+=========================================
+
+
+ARG1=$1
+ARG2=$2
+SCRIPTNAME=$0
+
+echo The name of this script: $SCRIPTNAME
+echo The first argument: $ARG1
+echo The second argument: $ARG2
+
+exit 0

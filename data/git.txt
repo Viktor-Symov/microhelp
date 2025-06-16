@@ -1,0 +1,110 @@
+
+
+Справка по GIT.
+
+1. Области git:
+ - Working directory: рабочий каталог, где находятся все файлы и каталоги;
+ - Staging area (index): подготовленные к коммиту файлы;
+ - Repository: пространство содержащее все ветки и коммиты;
+
+2. Статусы отслеживания файлов:
+ - Untracked: не отслеживаемый, только что созданный файл;
+ - Staged: файл, добавленный в индекс, готовый к коммиту;
+ - Unmodified: сохраненный и не модифицированный файл;
+ - Modified: модифицированный файл;
+
+3. Типы объектов в git:
+ - Blob: файл;
+ - Tree: каталог;
+ - Commit: Сохраненное состояние проекта;
+ - Annotated Tag - аннотированный тег;
+
+4. Показать версию git:
+ # git --version
+
+5. Перед любыми изменениями в git необходимо задать параметры:
+ # git config --global user.name "Viktor Symov"
+ # git config --global user.email "vsimov@yandex.ru"
+
+6. Показать все настройки git:
+ # git config --list 
+
+7. Создать проект:
+ # mkdir myproject && cd myproject
+ # git init
+ Создается проект, ветка по умолчанию "master"
+
+8. Показать название текущей ветки и других веток:
+ # git branch
+
+9. Переименовать ветку (часто используемая практика):
+ # git branch -m <new-name> 
+
+10. Создать новую ветку на основе текущей:
+ # git branch <new-tree>
+
+11. Сменить ветку:
+ # git checkout new-tree
+
+12. Проверить состояние проекта:
+ # git state
+
+13. Добавить файл в область Staging area:
+ # git add file.txt
+   Добавить все файлы в область Staging area:
+ # git add .
+
+14. Добавить все изменения в коммит:
+ # git commit -m "Describing message"
+
+15. Показать все коммиты:
+ # git log
+
+16. Перейти на другой коммит:
+ # git checkout ca30f6584070ab61da8f89f81ede13d64a7482b3
+
+17. Объединить ветки (другая ветка вливается в текущую):
+ # git merge <other-branch> -m <Message>
+
+18. Клонировать проект с удаленного репозитория:
+ # git clone <url>
+
+19. Показать настройки удаленного сервера:
+ # git remote -v
+
+20. Проверить как локальная ветка связана с удаленной веткой репозитория:
+ # git branch -vv
+
+21. Обновить проект на удаленном репозитории с локального ПК:
+ В первый раз:
+ # git push -u origin <branch>
+ Потом:
+ # git push
+
+22. Скачать изменения проекта, но не устанавливать их:
+ # git fetch
+
+23. Обновить проект на локальном ПК c удаленного репозитория:
+ В первый раз:
+ # git pull -u origin <branch>
+ Потом:
+ # git pull
+
+24. Сохранить Token:
+ # echo "https://username:token@github.com">> ~/.git-credentials
+ # git config --global credential.helper store
+ # git push
+   Everything up-to-date
+
+25. Связать локальный репозиторий с удаленным репозиторием:
+ # git remote add <url>
+
+26. Запустить текущий проект в Visual Studio Code:
+ # code .
+
+27. Мои репозитории на Github.com
+ https://github.com/Viktor-Symov/connect.git
+ https://github.com/Viktor-Symov/microhelp.git
+
+ 
+ 
