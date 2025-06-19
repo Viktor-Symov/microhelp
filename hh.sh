@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/bash
 
 # Help for Linux commands
 
@@ -14,7 +14,7 @@ then
     echo "The Help supports arguments:"
     for element in $Command_list
     do
-	printf " # hl %s\n" $element
+	printf " hh %s\n" $element
     done
     echo ""
     exit 0
