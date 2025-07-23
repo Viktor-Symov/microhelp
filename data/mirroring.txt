@@ -43,7 +43,7 @@ SPAN (Switched Port Analyzer) — это программная функция, 
 
 Другие понятия:
  - NTA (Network Traffic Analysis) - анализтор сетевого трафика;
- - IPS(Intrusion Prevention System) - система предотвращения вторжений;
+ - IPS (Intrusion Prevention System) - система предотвращения вторжений;
  - IDS (Intrusion Detection System) – система обнаружения вторжений;
- - NPB(Network Packet Broker) - сетевой брокер, система сбора и обработки копий сетевого трафика;
+ - NPB (Network Packet Broker) - сетевой брокер, система сбора и обработки копий сетевого трафика;
 
