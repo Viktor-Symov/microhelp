@@ -47,6 +47,12 @@
 8. Протестировать запуск задачи в cron:
     $ SHELL=/bin/bash PATH=/usr/bin:/bin ./command.sh
 
+9. Установить пользовательские переменные HOME, PATH, SHELL и MAILTO и запускать команду каждую минуту.
+    HOME=/opt
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    SHELL=/usr/bin/zsh
+    MAILTO=email@example.com
+    */1 * * * * command
 
 В последних версиях Linux-дистрибутивов — в частности Ubuntu 20.04 — помимо задач приписан ещё и запуск утилиты run-parts. Эта утилита отвечает за выполнение скриптов из следующих каталогов:
 /etc/cron.minutely — скрипты, которые должны выполняться каждую минуту
@@ -54,8 +60,8 @@
 /etc/cron.daily — скрипты, которые должны выполняться ежедневно
 /etc/cron.weekly — скрипты, которые должны выполняться каждую неделю
 /etc/cron.monthly — скрипты для ежемесячного запуска.
-В файле /etc/crontab использование утилиты run-parts не отличается от обычных задач и выглядит примерно так: 
 
+В файле /etc/crontab использование утилиты run-parts не отличается от обычных задач и выглядит примерно так: 
 # run-parts
 01 * * * * root run-parts /etc/cron.hourly
 01 23 * * * root run-parts /etc/cron.daily
