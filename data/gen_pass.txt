@@ -1,0 +1,16 @@
+=========================================
+=== Справка по генераторам паролей в Linux/BSD
+=========================================
+
+
+Одни из способов по созданию случайных паролей:
+
+1 .openssl rand -base64 500 | tr -dc 'a-zA-Z0-9' | fold -w 18 | head -n 1
+
+2. cat /dev/urandom | env LC_ALL=C tr -cd 'a-zA-Z0-9#$%!&\?*+,()-./:;<>=@[\]^_' | head -c 18 | xargs
+
+3. head /dev/urandom | env LC_ALL=C tr -dc A-Za-z0-9 | head -c64
+   OglGTxNjdRpu43sUtJAVA28CiE2qcaiDV9Gd1hVTnflRCSHD7a1BLWs828sxc69E
+
+4. https://www.fryaha.ru/password-generation-in-linux-freebsd-systems/
+
