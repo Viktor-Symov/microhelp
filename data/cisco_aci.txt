@@ -1,0 +1,221 @@
+=========================================
+=== Справка по Cisco ACI.
+=========================================
+
+Naming
+IPG - Interface Policy Group
+IPG_AP - Interface Policy Group for Access Port
+IPG_AP_1G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+IPG_AP_10G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+IPG_AP_25G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+IPG_AP_100G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+IPG_AP_ESXI_1G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+IPG_AP_ESXI_10G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+IPG_AP_ESXI_25G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+IPG_AP_ESXI_100G_Auto - Interface Policy Group for Access Port 100Mbit/s, Speed auto
+
+IPG_PC - Interface Policy Group for Port-Channel Port
+IPG_vPC - Interface Policy Group for vPC Port
+
+
+
+    Контракты на лифах хранятся в TCAM
+    LEAF-101# show zoning-rule			- посмотреть контракты на лифе
+    LEAF-101# show zoning-rule scope 2818048	- посмотреть контракты на лифе для определенного тенанта
+		SrcEPG = 0			- Any
+		DstEPG = 0			- Any
+		SrcEPG or DstEPG = 15		- vzAny, any внутри VRF
+    LEAF-101# show zoning-filter filter 24	- посмотреть фильтры на лифе
+
+
+
+    Contract types:
+    Standard			- обычные контракты
+    Taboos			- контракты для зарета, применяются до Standard
+    Imported			- позволяет импортировать контракты из других тенантов, чтобы не создавать дубли
+    Filters			- условная еденица которая фильтрует трафик (объектная группа внутри Access-List)
+    
+    Contract for EPGs:
+    Consumer EPGs		- Получатель сервиса, например application. Контракт чаще всего применятся здесь, т.е ближе к источнику.
+    Provider EPGs		- Предоставляет сервсис, например db-server
+    Consumer Contexts		- Применение EPG для всего VRF (SrcEPG or dstEPG = 15). Consumer EPGs это vzANY, т.е. все EPG внутри VRF. Позволяет сократить память TCAM и уменьшить число контрактов
+
+
+
+
+
+
+1. Создание VRF
+    Tenants -> NameTenant -> Networking -> VRFs -> Create VRF
+    Name: VRF_NAME
+    Policy Control Enforcement Preference:
+	Enforced		- для взаимодействия между разными EPG требуется контракт. Default
+	Unenforced		- для взаимодействия между разными EPG контракт не требуется
+    Policy Control Enforcement Direction:
+	Egress			- контракт применяется на выходе из VxLAN туннеля между LEAF коммутаторами
+	Ingress			- контракт применяется на входе в VxLAN туннель между LEAF коммутаторами. Default
+    Create A Bridge Domain : ☑ следующим шагом можно задать Bridge Domain.
+
+
+2. Создание Bridge Domain
+    Tenants -> NameTenant -> Networking -> Bridge Domain -> Create Bridge Domain
+    Name: BD_10.10.10.0
+    Type:
+	fc:		- fiber-channel BD
+	regular: 	- обычный BD
+    VRF: VRF_A
+    Unicast Routing:
+	⬜Enabled	- BD работает в режиме L2 сегмента, IP BD не задан, маршрутизации нет, клиентские IP не изучаются
+	✓ Enabled	- BD работает в режиме L3, IP BD задан, маршрутизация есть, клиентские IP изучаются. Default
+    ARP Flooding:
+	⬜Enabled - ARP запросы не флудятся (!! где ропаются?)
+	✓ Enabled - Флудятся любые ARP запросы в рамках BD. Default
+    Limit IP learned to subnet :
+	 ⬜Если IP адрес хоста не попадает в диапазон подсети BD, то он изучается
+	✓ Если IP адрес хоста не попадает в диапазон подсети BD, то он не изучается. Default
+    Configure Quota:
+	✓ Определяет максимальное количество EPG в BD, и указывает действие в случае нарушения
+		Exceed Action:	Fail Transaction Action
+		Raise Transaction Action. Default
+	⬜Опция выключена. Default
+
+
+2.1 Добавление IP адреса в Bridge Domain
+    ACI фабрика позволяет маршрутизировать пакеты между разными Bridge Domain
+    Tenants -> NameTenant -> Networking -> Bridge Domain -> BD_10.10.10.0
+    Policy -> L3 Conficuration
+    Включить Unicast Routing: ✓ 
+    Добавить подсеть Subnets +: 
+	Gateway: 10.10.10.254/24
+	Scope: ✓ Private to VRF		- Данная сеть не будет анонсироваться протоколами маршрутизации в L3Out стык
+
+
+3. Создание Application Profile
+    Tenants -> NameTenant -> Application Profiles -> Create Application Profiles
+    Name: AP_NAME
+    EPG +:		- позволяет следующим шагом создать/добавить EPG
+
+
+4. Создание EPG
+    Tenants -> NameTenant -> Application Profiles -> AP_NAME -> ApplicationEPGs -> Create Application EPG
+    Name: EPG_10.10.10.0
+    Intra EPG Isolation:
+	Enforced	- трафик внутри одной EPG зепрещен
+	Unenforced	- трафик внутри одной EPG разрешен. Default
+    Prefered Group Member:
+	Exclude		- ?? Все EPG входящте в группу, для взаимодейстрия контракта не требуют.Default
+	Include		- ??
+    Flood in Encapsulation:
+	Disabled	- ?? Ограничение исходящего трафика. Default
+	Enabled		- ??
+    Bridge Domain: BD_10.10.10.0
+	Требуется связать с Bridge Domain
+    Associate to VM Domain Profiles:
+	✓ Интеграция с VM. Default
+	⬜Нет интеграции
+    Statically Link with leaves/paths:
+	✓ Указать Static Bunding
+	⬜Указать Dynamic BundingDefault
+    EPG Contract Master:
+	 Наследовать контракт присоздании EPG или нет
+
+
+5. Ассоциировать порт коммутатора с EPG (Static binding)
+    Tenants -> NameTenant -> Application Profiles -> AP_NAME -> ApplicationEPGs -> EPG_NAME -> Deploy Static EPG on PC, vPC, or Interface
+    Path Type:
+	Port			- Individual интерфейс
+	Direct Port Channel	- Бандл интерфейс
+	Virtual Port Channel	- vPC интерфейс
+    Node: PD01-L101 (Node-101)
+    Path: eth1/1
+    Port Encap (or Secondary VLAN for Micro-Seg): 1310
+	Ожидаемый VLAN на интерфейсе
+    Deploy Immediacy:
+	Immediate: Политика EPG появится на коммутаторе сразу
+	On Demand: Политика EPG появится на коммутаторе только когда будет получен первый трафик соответсвующий политике. Default
+    Mode:
+	Trunk
+	Access (802.1P)
+	Access (Untagged)
+
+
+6. Ассоциировать Physical Domain с EPG
+    Tenants -> NameTenant -> Application Profiles -> AP_NAME -> ApplicationEPGs -> EPG_NAME -> Domains (VMs and Bare-Metals) -> Add Physical Domain Association
+    Physical Domain Profile: PhysD
+	Добавить ассоциацию с физическим доменом. Домен заводится на VLAN (VLAn Pools)
+
+
+7. Создание контрактов
+7.1 Создание фильтра
+    Tenants -> NameTenant -> Contracts -> Filters -> Create Filter
+    Name: FL_ICMP
+    Entries +: Список ACL
+	Name: ICMP
+	EtherType: IP
+	IP Protocol: icmp
+    Entries +: Список ACL
+	Name: WEB
+	EtherType: IP
+	IP Protocol: tcp
+	Match Only Fragment:		- Отлавливать только фрагментированные пакеты. no default
+	Stateful:			- Разрешаются все TCP пакеты с флагом ACK, подобие псевдо stateful режима. no default
+	Source Port/Range:
+	    From: 443
+	    To:   443
+	Destination Port/Range:
+	    From: 443
+	    To:   443
+
+7.2 Создание контракта
+    Tenants -> NameTenant -> Contracts -> Standart -> Create Contract
+    Name: CNT_FROM_TO
+    Scope: VRF
+	Application Profile		- привязать к разным EPG в рамках одного AP
+	VRF				- привязать к разным EPG в рамках одного VRF
+	TENANT				- привязать к разным EPG в рамках одного тенанта, ликинг между VRF
+	GLOBAL				- привязать к разным EPG в разных тенантах, ликинг между тенантами
+    Добавить Subjects +:		- Внутрь Subject вкладываем различные фильтры
+	Name: SBJ_DNS
+	Apply Both Direction: ✓ 	- Фильтр для контракта применяется в обоих направлениях. Default
+	Reverse Filter Ports: ✓ 	- В фильтр меняются местами SRC и DST порты. Default
+	Filters +:
+	Добавить: NameTenant/FL_ALL
+	Action:
+	    Permit
+	    Deny
+	Log				- включить логирование
+	Enable Policy Compression	- оптимизация контракта для уменьшения TCAM памяти
+	Priority:			- если на одной EPG несколько контрактов и трафик попадает в несколько контрактов, то можно выбрать какой контракт приоритетнее
+
+7.3 Применение контракта для EPG
+    Tenants -> NameTenant -> Application Profiles -> AP_NAME -> ApplicationEPGs -> EPG_10.10.10.0 -> ADD Provided Contract
+    Contract: CNT_FROM_TO
+    Tenants -> NameTenant -> Application Profiles -> AP_NAME -> ApplicationEPGs -> EPG_10.10.11.0 -> Add Consumed Contract
+    Contract: CNT_FROM_TO
+
+7.3 Применение контракта для VRF (vzAny)
+    Tenants -> NameTenant -> Networking -> VRFs -> VRF_NAME ->EPG Collection for VRF -> ADD Provided Contract
+    ???
+
+
+
+
+
+
+
+
+
+
+
+
+⬜ er
+
+✓
+✔
+☑
+■
+⬜
+✕
+✖
+✗
+
